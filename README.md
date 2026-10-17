@@ -9,6 +9,7 @@ You edit, fix, redesign and restyle your own photos with Gemini. One dial, four 
 - One file: `index.html`. No build step, no server.
 - Your photos stay in your browser tab. Nothing uploads until you paste it into Gemini yourself.
 - Progress saves in this browser only. On a shared computer, use **Start fresh for the next person** on the Finish step.
+- Example images: full-size before/after files are in [`examples/`](examples/). The app can also save each one, and the class folder zip includes all 8.
 - Sample photos: Grace Hopper (US Navy, public domain), Eileen Collins (NASA, public domain), SpaceX launch pad (public domain), coffee cup (Rachel Michetti, CC0), Chelsea the cat (Stefan van der Walt, CC0). The before/after examples were made in Gemini.
 
 Life is what we make it.
