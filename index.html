@@ -1168,7 +1168,7 @@ function vPractice(i,k){
  var exH='<details class="help" data-help="ex-'+k+'"'+(S.helpOpen["ex-"+k]?' open':'')+'><summary>Weak vs strong: see why wording matters</summary><div class="helpin"><div class="chips">'+P.ex.map(function(x,j){return '<button type="button" class="chip sm" data-act="ex" data-p="'+k+'" data-i="'+j+'" aria-pressed="'+(j===exi)+'">'+esc(x.scene)+'</button>'}).join("")+'</div><div class="exw"><div class="exc bad"><span class="lab exl-bad">Weak</span><p class="exq">“'+esc(ex.weak)+'”</p><p class="muted">'+esc(ex.bad)+'</p></div><div class="exc good"><span class="lab exl-good">Strong</span><p class="exq">“'+esc(ex.strong)+'”</p><p class="muted">'+esc(ex.good)+'</p></div></div><p class="cap"><b>Watch for:</b> '+esc(ex.watch)+'</p></div></details>';
   var b2=o2?'<div class="pedit"><button type="button" class="pe-ph" data-act="jump" data-to="step-'+k+'-1" aria-label="Your photo. Go to Pick a photo">'+(src?'<img src="'+src.url+'" alt=""><span class="dph-tag">Your photo</span>':'<span class="dph-empty">No photo yet</span>')+'</button><div class="pe-main"><label class="flab" for="prompt-'+k+'">Your prompt</label><textarea class="prompt" id="prompt-'+k+'" data-input="prompt" data-p="'+k+'" spellcheck="false">'+esc(S.ps[k].prompt)+'</textarea></div></div><div id="lint-'+k+'">'+lintMini(k)+'</div>'+
   (!ps.okP&&!ps.prompt?'<p class="cap">Checker wrong about your prompt? <button class="linkbtn" data-act="override" data-p="'+k+'">Send it anyway</button></p>':'')+
-  (k==="d"?'<div class="tipline" style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between"><span style="min-width:0;flex:1 1 280px"><b>Need a style?</b> Remix 100 shows all 100 poster styles in 2 minutes, from technical pen to pop and neon. Pause on one you like. Use its name in your prompt.</span><a class="btn sec sm" href="https://claude.ai/artifact/RZhMBE8tifK8QAfHK51BXe" target="_blank" rel="noopener">Browse 100 styles '+ic("open")+'</a></div>':'')+exH+'<details class="help" data-help="bld-'+k+'"'+(S.helpOpen["bld-"+k]===false?'':' open')+'><summary>Build it with fields</summary><div class="helpin" id="bldin-'+k+'">'+builderHTML(k)+'</div></details>'
+  (k==="d"?'<div class="tipline" style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between"><span style="min-width:0;flex:1 1 280px"><b>Need a style?</b> The 100 Image Gen Styles poster shows 100 named looks on one page, from monoline vector to gouache. Pick one you like. Use its name in your prompt.</span><a class="btn sec sm" href="https://im4creative.github.io/MS-PL-Restore-and-Remix/styles/100-image-gen-styles.pdf" target="_blank" rel="noopener">Open the styles PDF '+ic("open")+'</a></div>':'')+exH+'<details class="help" data-help="bld-'+k+'"'+(S.helpOpen["bld-"+k]===false?'':' open')+'><summary>Build it with fields</summary><div class="helpin" id="bldin-'+k+'">'+builderHTML(k)+'</div></details>'
   :'<p class="muted">Pick a photo first.</p>';
  var b3=o3?'<div class="btnrow"><a class="btn area sm" href="https://gemini.google.com/app" target="_blank" rel="noopener">Open Gemini '+ic("open")+'</a><button class="btn sec sm" data-act="copyphoto" data-p="'+k+'"'+(src?"":" disabled")+'>'+ic("copy")+'Copy photo</button><button class="btn sec sm" data-act="savephoto" data-p="'+k+'"'+(src?"":" disabled")+'>'+ic("save")+'Save photo</button><button class="btn sec sm'+NEED(!ps.sent)+'" data-act="copyprompt" data-p="'+k+'">'+ic("copy")+'Copy prompt</button></div><p class="cap">In Gemini: + \u2192 Create image. Paste the photo, paste the prompt, send.</p>'
   :'<p class="muted">Locked until your prompt passes the check.</p>';
@@ -1342,6 +1342,7 @@ setInterval(function(){tickClock(false)},1000);
 /* ---------- render ---------- */
 function render(){
  var ae=document.activeElement,aid=ae&&ae.id,ss=null,se=null;try{ss=ae.selectionStart;se=ae.selectionEnd}catch(e){}
+ var prevId=S.idx!=null&&STAGES[S.idx]?STAGES[S.idx].id:null;
  var idx=STAGES.map(function(s){return s.id}).indexOf(S.stage);if(idx<0){idx=0;S.stage="start"}
  var s=STAGES[idx],h="",last="";
  if(s.id==="dial"){var dp=S.dialPos==null?0:S.dialPos;if(S.gate.dial.indexOf(dp)<0){S.gate.dial.push(dp);saveGate()}}
@@ -1352,12 +1353,17 @@ function render(){
  $("#foot").innerHTML=footHTML(idx);$("#foot").dataset.c=s.c;$("#stage").dataset.c=s.c;
  S.idx=idx;renderClock();
  var v={start:vStart,dial:vDial,tour:vTour,"can-do":vCando,words:vWords,fix:vFix,recap:vRecap,finish:vFinish}[s.id];
- $("#stage").innerHTML=s.p?vPractice(idx,s.p):v(idx);
+ var stg=$("#stage"),keepY=window.scrollY,same=prevId===s.id;if(same)stg.style.minHeight=stg.offsetHeight+"px";
+ stg.innerHTML=s.p?vPractice(idx,s.p):v(idx);
+ if(same){if(Math.abs(window.scrollY-keepY)>1)window.scrollTo(0,keepY);Promise.all([].slice.call(stg.querySelectorAll("img")).map(function(im){return im.decode?im.decode().catch(function(){}):null})).then(function(){if(stg.style.minHeight){stg.style.minHeight="";if(prevId===S.stage&&Math.abs(window.scrollY-keepY)>1)window.scrollTo(0,keepY)}})}
  renderDock();sizeVars();
  if(s.id==="finish"&&!S.confettiDone){S.confettiDone=true;setTimeout(confetti,120)}if(s.id!=="finish")S.confettiDone=false;
  if(aid){var n=document.getElementById(aid);if(n&&n!==document.activeElement){try{n.focus({preventScroll:true});if(ss!=null)n.setSelectionRange(ss,se)}catch(e){}}}
- var cur=$(".ri[aria-current]"),rl0=$("#rail");if(cur&&rl0&&window.innerWidth>1000&&rl0.scrollHeight>rl0.clientHeight&&(cur.offsetTop<rl0.scrollTop||cur.offsetTop+cur.offsetHeight>rl0.scrollTop+rl0.clientHeight))rl0.scrollTop=Math.max(0,cur.offsetTop-rl0.clientHeight/2);
- if(cur&&cur.scrollIntoView&&window.innerWidth<=1000)try{cur.scrollIntoView({inline:"center",block:"nearest"})}catch(e){}
+ var cur=$(".ri[aria-current]"),rl0=$("#rail");
+ /* keep the current step visible inside the rail; never scroll the page (that caused the jolt on narrow screens) */
+ if(cur&&rl0){var rr=rl0.getBoundingClientRect(),cr=cur.getBoundingClientRect();
+  if(rl0.scrollWidth>rl0.clientWidth+1&&(cr.left<rr.left||cr.right>rr.right))rl0.scrollLeft+=cr.left-rr.left-(rr.width-cr.width)/2;
+  if(rl0.scrollHeight>rl0.clientHeight+1&&(cr.top<rr.top||cr.bottom>rr.bottom))rl0.scrollTop+=cr.top-rr.top-(rr.height-cr.height)/2}
  if(s.p)S.fixTarget=s.p;
 }
 /* ---------- events ---------- */
